@@ -105,6 +105,8 @@ This command runs all possible regressions and saves the results to `regtab1.dta
 robustreg , dep(y1, y2) indep(x1) control(c1, , c1 c2) fe( , f1, f2) sample( , s1) se(robust, , f2) save("regtab1")
 ```
 
+![Figure 3](fig/result.png)
+
 #### Example 2: Generate and Save a Plot
 
 This command generates a specification curve and saves it as `curve1.png`.
