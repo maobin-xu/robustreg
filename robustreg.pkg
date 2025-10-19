@@ -1,9 +1,10 @@
 v 1.0
-d A Stata command to plot and save regression results from specification combinations. Specification curve analysis, meta-analysis, and robustness.
+d A Stata command to plot and save regression results from specification combinations. Specification curve analysis, meta analysis, and robustness.
 d 
 d by Maobin Xu, The Chinese University of Hong Kong, Shenzhen
 d
 f robustreg.ado
 f robustreg.sthlp
 e robustreg.sthlp
+
 
