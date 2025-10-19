@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 1.0.0 2025-08-24}{...}
+{* *! version 1.0.0  2025-08-24}{...}
 {title:Title}
 
 {pstd}
@@ -130,6 +130,7 @@ Simonsohn, U., Simmons, J.P. & Nelson, L.D. 2020. "Specification Curve Analysis"
 {pstd}Maobin Xu{p_end}
 {pstd}The Chinese University of Hong Kong, Shenzhen {p_end}
 {pstd}Email: {browse "mailto:maobinxu@foxmail.com":maobinxu@foxmail.com}{p_end}
+
 
 
 
