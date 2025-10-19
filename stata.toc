@@ -1,0 +1,8 @@
+v 1.0
+n robustreg
+d A Stata command to plot and save regression results from specification combinations. Specification curve analysis, meta-analysis, and robustness.
+d by Maobin Xu, The Chinese University of Hong Kong, Shenzhen
+f robustreg.ado
+f robustreg.sthlp
+f robustreg.pkg
+
