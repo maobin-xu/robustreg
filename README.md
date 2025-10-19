@@ -4,7 +4,7 @@ by **Maobin Xu**. Last updated on 19th October, 2025.
 
 Email: maobinxu@foxmail.com
 
-`robustreg` is is useful for specification curve analysis, meta-analysis, and robustness. It systematically runs a series of regressions based on user-defined specification combinations, plots the results, and saves the output to a dataset.
+`robustreg` is useful for specification curve analysis, meta-analysis, and robustness. It systematically runs a series of regressions based on user-defined specification combinations, plots the results, and saves the output to a dataset.
 
 An example of the final curve :
 ![Figure 2](fig/curve2.png)
