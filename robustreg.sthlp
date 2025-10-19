@@ -52,7 +52,6 @@
 {pstd}
 An alternative command is {cmd:specurve} developed by Mingze Gao, which requires users to manually create a YAML configuration file.{p_end}
 
-
 {title:Examples}
 
 {phang2}{stata clear}{p_end}
@@ -131,6 +130,7 @@ Simonsohn, U., Simmons, J.P. & Nelson, L.D. 2020. "Specification Curve Analysis"
 {pstd}Maobin Xu{p_end}
 {pstd}The Chinese University of Hong Kong, Shenzhen {p_end}
 {pstd}Email: {browse "mailto:maobinxu@foxmail.com":maobinxu@foxmail.com}{p_end}
+
 
 
 
