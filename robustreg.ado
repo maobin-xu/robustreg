@@ -1,4 +1,4 @@
-*! version 1.0 2025-08-24
+*! version 1.0.0 2025-08-24
 * by Maobin Xu
 
 program define robustreg
