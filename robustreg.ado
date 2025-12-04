@@ -1,5 +1,5 @@
 *! version 1.0 2025-08-24
-* by Maobin Xu, The Chinese University of Hong Kong, Shenzhen
+* by Maobin Xu
 
 program define robustreg
 version 16.1
