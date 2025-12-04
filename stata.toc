@@ -1,4 +1,4 @@
-v 1.0
+v 1.0.0
 n robustreg
 d A Stata command to plot and save regression results from specification combinations. Specification curve analysis, meta analysis, and robustness.
 d by Maobin Xu
