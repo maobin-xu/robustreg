@@ -1,6 +1,6 @@
 # robustreg
 
-Last updated on 19th October, 2025.
+Last updated on 4th February, 2026.
 
 `robustreg` is useful for specification curve analysis, meta analysis, and robustness. It systematically runs a series of regressions based on user-defined specification combinations, plots the results, and saves the output to a dataset.
 
@@ -34,7 +34,7 @@ robustreg, dep(str) indep(str) [options]
 #### Regression Options (using `reghdfe`)
 
 * `dep(str)`: A list of dependent variables.
-* `indep(str)`: A list of key independent variables.
+* `indep(str)`: A list of sets of independent variables. Minimum number of sets is 1. Allow multiple variables within each set. If you use multiple sets, specification curve will only use the estimated coefficients for the first variable within each set
 * `sample(str)`: A list of sample variables (that equal 1) to define the samples used in regressions.
 * `control(str)`: A list of control variable sets.
 * `fe(str)`: A list of fixed effects.
@@ -91,8 +91,8 @@ gen s1 = mod(_n, 2) == 1
 gen s2 = mod(_n-1, 3) + 1 == 1
 
 // Fixed effect variables
-gen f1 = mod(_n, 2) == 1
-gen f2 = mod(_n-1, 3) + 1
+gen f1 = mod(_n, 50)
+gen f2 = mod(_n, 100)
 ```
 
 #### Example 1: Save Regression Results Only
@@ -100,7 +100,7 @@ gen f2 = mod(_n-1, 3) + 1
 This command runs all possible regressions and saves the results to `regtab1.dta`, without generating a plot.
 
 ```stata
-robustreg , dep(y1, y2) indep(x1) control(c1, , c1 c2) fe( , f1, f2) sample( , s1) se(robust, , f2) save("regtab1")
+robustreg , dep(y1, y2) indep(x1, x1 x2) control(c1, , c1 c2) fe( , f1, f2) sample( , s1) se(robust, , f2) save("regtab1")
 ```
 The results are as follows:
 

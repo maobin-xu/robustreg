@@ -1,4 +1,4 @@
-*! version 1.0.0 2025-08-24
+*! version 1.1 2026-02-04
 * by Maobin Xu
 
 program define robustreg
@@ -39,7 +39,7 @@ forv each_spec = 1/`spec_num' {
     local temp_`spec' = ustrregexra("`temp_`spec''", ",$"   , ",default" , .)  // if default option is in the end part
 
 	* specification number of each specification choice
-	local `spec'_count = ustrlen("`temp_`spec''") - ustrlen(usubinstr("`temp_`spec''",",","",.)) + 1 
+	local `spec'_count = ustrlen("`temp_`spec''") - ustrlen(ustrregexra("`temp_`spec''",",","",.)) + 1 
 
 	* set command and label of specification choice
     tokenize `"`temp_`spec''"' , parse(",")
@@ -92,8 +92,18 @@ forv each_spec = 1/`spec_num' {
     }
 
 	* print choice count
-    display as text "The number of `spec_label' is ``spec'_count'"
+    display as text "The # of `spec_label' is ``spec'_count'"
 }
+
+* get max indepdent variable length
+local max_indep_varnum 1  // max independent variable number
+forv i = 1/`indep_count' {
+	local each_indep_varnum: word count `indep_command_`i''
+	if `each_indep_varnum' > `max_indep_varnum' {
+		local max_indep_varnum `each_indep_varnum'
+	}
+}
+// dis "The maximum independent variable number is `max_indep_varnum'"
 
 * model number
 local model_num = `sample_count'*`dep_count'*`indep_count'*`control_count'*`fe_count'*`se_count'
@@ -103,15 +113,29 @@ display as text "The number of regression(s) is `model_num'"
 /** Regression **/
 
 cap: frame drop robustreg_output_table
-frame create robustreg_output_table b t ll ul F N `stats'     ///
-    strL command_dep     strL label_dep     plot_dot_dep_y     ///
-	strL command_indep   strL label_indep   plot_dot_indep_y   ///
-	strL command_control strL label_control plot_dot_control_y ///
-	strL command_fe      strL label_fe      plot_dot_fe_y      ///
-	strL command_se      strL label_se      plot_dot_se_y      ///
-	strL command_sample  strL label_sample  plot_dot_sample_y
-local reg_count = 0
+frame create robustreg_output_table
+frame robustreg_output_table {
+	qui: insobs `model_num'
+	forv i = 1/`max_indep_varnum' {
+		qui: gen b`i'  = .
+		qui: gen t`i'  = .
+		qui: gen ll`i' = .
+		qui: gen ul`i' = .
+	}
+	foreach spec in dep indep control fe se sample {
+        qui: gen command_`spec'    = ""
+		qui: gen label_`spec'      = ""
+		qui: gen plot_dot_`spec'_y = .
+	}
+	* additional stats
+	foreach v in F N `stats' {
+		qui: gen `v' = .
+	}
+}
+
+
 /* Note: The order of the following loops does not matter */
+local reg_count = 0
 * for each sample choice
 forv each_sample = 1/`sample_count' {
 	local each_sample_command `sample_command_`each_sample''
@@ -136,35 +160,47 @@ forv each_sample = 1/`sample_count' {
                     forv each_se = 1/`se_count' {	
     		            local each_se_command `se_command_`each_se''
     		            local each_se_label   `se_label_`each_se''
-						* regression
-						// dis "reghdfe `each_dep_command' `each_indep_command' `each_control_command' `each_sample_command' , `each_fe_command' `each_se_command' level(`level')"
+						
+						// regression
+						* dis "reghdfe `each_dep_command' `each_indep_command' `each_control_command' `each_sample_command' , `each_fe_command' `each_se_command' level(`level')"
 	                    qui: reghdfe `each_dep_command' `each_indep_command' `each_control_command' `each_sample_command' , `each_fe_command' `each_se_command' level(`level') `reghdfe_opt'
 	                    * store result
                         matrix results = r(table)
 	                    // mat list results
-                        scalar observation = e(N) 
-						scalar F_value     = e(F) 
+                        local stat_N = e(N) 
+						local stat_F = e(F) 
 						* additional stats
-						local add_stats ""
 						if "`stats'"!="" {
 							foreach stat in `stats' {
-								local stat_`stat' = e(`stat')
-                        	    local add_stats " `add_stats'  (`stat_`stat'') "
+								local stat_`stat' = e(`stat') 
 							}
                         }
-	                    * save result to output table
-                        frame post robustreg_output_table  ///
-						    (results["b" ,"`each_indep_command'"]) ///
-							(results["t" ,"`each_indep_command'"]) ///
-							(results["ll","`each_indep_command'"]) ///
-							(results["ul","`each_indep_command'"]) ///
-							(F_value) (observation) `add_stats'        ///
-						    ("`each_dep_command'")    ("`each_dep_label'")    (`each_dep')     ///
-						    ("`each_indep_command'")  ("`each_indep_label'")  (`each_indep')   ///
-						    ("`each_control_command'")("`each_control_label'")(`each_control') ///
-						    ("`each_fe_command'")     ("`each_fe_label'")     (`each_fe')      ///
-						    ("`each_se_command'")     ("`each_se_label'")     (`each_se')      ///
-						    ("`each_sample_command'") ("`each_sample_label'") (`each_sample')
+
+						// save to output table
+						local row = `reg_count' + 1
+						* each independent variable result
+						local each_indep_varnum: word count `each_indep_command'
+						forv i = 1/`each_indep_varnum' {
+							local each_indep_var_`i': word `i' of `each_indep_command'
+                            frame robustreg_output_table {
+								qui: replace b`i'  = results["b" ,"`each_indep_var_`i''"]   in `row'
+								qui: replace t`i'  = results["t" ,"`each_indep_var_`i''"]   in `row'
+								qui: replace ll`i' = results["ll","`each_indep_var_`i''"]   in `row'
+								qui: replace ul`i' = results["ul","`each_indep_var_`i''"]   in `row'
+							}
+						}
+						* general regression result
+						frame robustreg_output_table {
+							foreach spec in dep indep control fe se sample {
+							    qui: replace command_`spec'    = "`each_`spec'_command'"  in `row'
+							    qui: replace label_`spec'      = "`each_`spec'_label'"    in `row'
+								qui: replace plot_dot_`spec'_y = `each_`spec''            in `row'
+							}
+							foreach v in F N `stats' {
+								qui: replace `v' = `stat_`v''  in `row'
+							}
+						}
+
 						// display progress
 						if mod(`reg_count', 50) == 0 {   // display process for every 50 regressions
 							display as text "`reg_count' -> " _continue
@@ -227,11 +263,11 @@ if "`plot'"!="" {
     // region parameters
     frame robustreg_output_table {
         * order by regression coefficient
-        sort b
+        sort b1
         * range of beta coefficients
-        qui: sum ul
+        qui: sum ul1
         local CI_max = r(max)
-        qui: sum ll
+        qui: sum ll1
         local CI_min = r(min)
         * range of specification region and curve
         local plot_spec_y_max = min(`CI_min', 0)  // max specfication y
@@ -270,14 +306,14 @@ if "`plot'"!="" {
 			// dis `" `plot_label_`each_spec'_y' 0 "{bf:`each_spec_label'}" "'
         }
         * special labels
-        local plot_label_coef_min_y = round(b[1],0.001)  // minimal beta
-        local plot_label_coef_max_y = round(b[_N],0.001) // maximal beta
-        local plot_label_ui_y       = ul[1]              // upper confidence interval
-        local plot_label_li_y       = ll[1]              // lower confidence interval
+        local plot_label_coef_min_y = round(b1[1],0.001)  // minimal beta
+        local plot_label_coef_max_y = round(b1[_N],0.001) // maximal beta
+        local plot_label_ui_y       = ul1[1]              // upper confidence interval
+        local plot_label_li_y       = ll1[1]              // lower confidence interval
 
         // graph
-        twoway (rarea   ul ll plot_x , color(gray%40) `rarea_opt' ) ///
-               (scatter b     plot_x , color(gray) connect(l) `scatter_opt' ) ///
+        twoway (rarea   ul1 ll1 plot_x , color(gray%40) `rarea_opt' ) ///
+               (scatter b1      plot_x , color(gray) connect(l) `scatter_opt' ) ///
                (scatter `plot_dot_list' plot_x )  ///
                , legend(off) xscale(off) yscale(noline) `plot_spec'  ///
         	   xlabel(1(1)`model_num', noticks nolabels grid glpattern(dot) glcolor(gray) )  ///
@@ -328,10 +364,11 @@ gen y1 = 0.24*x1 + 0.4*exp(c1) + e
 gen y2 = 0.26*x1 + 0.4*exp(c1) + e
 gen s1 = mod(_n, 2) == 1
 gen s2 = mod(_n-1, 3)==1 
-gen f1 = mod(_n, 2) == 1
-gen f2 = mod(_n-1, 3) + 1
+gen f1 = mod(_n, 50)
+gen f2 = mod(_n, 100)
 
-robustreg , dep(y1, y2) indep(x1) control(c1, , c1 c2) fe( , f1, f2) sample( , s1) se(robust, , f2) save("regtab1")
+
+robustreg , dep(y1, y2) indep(x1, x1 x2) control(c1, , c1 c2) fe( , f1, f2) sample( , s1) se(robust, , f2) save("regtab1")
 
 robustreg , dep(y1, y2) indep(x1) control(c1, , c1 c2) fe( , f1, f2) sample( , s1)  plot("curve1.png") twoway_opt(graphregion(margin(l=42 r=5 t=0 b=0))) graph_opt(width(1500) height(1500))
 

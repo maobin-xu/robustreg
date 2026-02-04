@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 1.0.0  2025-08-24}{...}
+{* *! version 1.1.0  2026-02-04}{...}
 {title:Title}
 
 {pstd}
@@ -14,7 +14,7 @@
 {synoptline}
 {syntab:Regression Options (using {cmd:reghdfe})}
 {synopt: {opt dep(str)} } list of dependent variables. Minimum number of variables is 1 {p_end}
-{synopt: {opt indep(str)} } list of independent variables. Minimum number of variables is 1 {p_end}
+{synopt: {opt indep(str)} } list of sets of independent variables. Minimum number of sets is 1. Allow multiple variables within each set. If you use multiple sets, specification curve will only use the estimated coefficients for the first variable within each set {p_end}
 {synopt: {opt sample(str)} } list of sample variables (that equal 1) to define the samples used in regressions. Default is full sample {p_end}
 {synopt: {opt control(str)} } list of control variable sets. Default is no control variable {p_end}
 {synopt: {opt fe(str)} } list of fixed effects. Default is no fixed effect {p_end}
@@ -85,13 +85,13 @@ Sample variables:{p_end}
 {pstd}
 Fixed effect variables:{p_end}
 
-{phang2}{stata gen f1 = mod(_n, 2) == 1}{p_end}
-{phang2}{stata gen f2 = mod(_n-1, 3) + 1}{p_end}
+{phang2}{stata gen f1 = mod(_n, 50)}{p_end}
+{phang2}{stata gen f2 = mod(_n, 100)}{p_end}
 
 {pstd}
 Save only regression data:{p_end}
 
-{phang2}{stata `"robustreg , dep(y1, y2) indep(x1) control(c1, , c1 c2) fe( , f1, f2) sample( , s1) se(robust, , f2) save("regtab1") "'}{p_end}
+{phang2}{stata `"robustreg , dep(y1, y2) indep(x1, x1 x2) control(c1, , c1 c2) fe( , f1, f2) sample( , s1) se(robust, , f2) save("regtab1") "'}{p_end}
     
 {pstd}
 Save a curve graph with simple settings:{p_end}
